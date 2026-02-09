@@ -23,7 +23,10 @@ from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing_page, name='landing'),
+    path('design/', views.design_configurator, name='design'),
+    path('save-design/', views.save_design, name='save_design'),
     path('generate/', views.generate_tickets, name='generate'),
+    path('download-tickets/', views.download_tickets_zip, name='download_tickets'),
     path('scanner/', views.gate_scanner, name='scanner'),
     path('api/validate/', views.validate_ticket_api, name='validate'),
 ]

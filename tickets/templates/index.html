@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             --accent: #0f172a;
             --text: #f8fafc;
         }
+
         body {
             font-family: 'Segoe UI', sans-serif;
             background-color: var(--accent);
@@ -19,11 +21,17 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
         }
-        h1 { margin-bottom: 40px; font-size: 2.5rem; letter-spacing: 1px; }
-        
+
+        h1 {
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+
         .container {
             display: flex;
             gap: 30px;
@@ -46,32 +54,67 @@
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             border-color: var(--primary);
         }
 
-        .icon { font-size: 4rem; margin-bottom: 20px; display: block; }
-        .title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; display: block; }
-        .desc { font-size: 0.9rem; color: #94a3b8; }
+        .card:nth-child(1):hover {
+            border-color: #a855f7;
+        }
+
+        .card:nth-child(2):hover {
+            border-color: #10b981;
+        }
+
+        .card:nth-child(3):hover {
+            border-color: #3b82f6;
+        }
+
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .desc {
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
 
         /* Mobile Responsive */
-        @media (max-width: 600px) {
-            .container { flex-direction: column; }
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <h1>EVENT DASHBOARD</h1>
 
     <div class="container">
+        <a href="/design/" class="card">
+            <span class="icon">🎨</span>
+            <span class="title">Design Tickets</span>
+            <span class="desc">Customize Look<br>Colors, Pricing & Layout</span>
+        </a>
+
         <a href="/generate/" class="card">
             <span class="icon">🎟️</span>
             <span class="title">Generate Tickets</span>
             <span class="desc">Admin Panel<br>Create & Print QR Codes</span>
         </a>
 
-        <a href="/scanner/" class="card" style="border-color: #10b981;">
+        <a href="/scanner/" class="card">
             <span class="icon">📷</span>
             <span class="title">Gate Scanner</span>
             <span class="desc">Entry Gate<br>Validate & Check-In</span>
@@ -79,4 +122,5 @@
     </div>
 
 </body>
+
 </html>

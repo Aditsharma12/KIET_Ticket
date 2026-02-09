@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Your Tickets</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e293b;
+            --accent: #0f172a;
+            --text: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--accent);
+            color: var(--text);
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #60a5fa;
+            margin-bottom: 40px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .form-section {
+            background: var(--secondary);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+        }
+
+        .preview-section {
+            background: var(--secondary);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: var(--accent);
+            color: white;
+            font-size: 1rem;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 50px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .price-field {
+            display: none;
+        }
+
+        .price-field.active {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #059669;
+        }
+
+        .back-link {
+            color: #60a5fa;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Ticket Preview */
+        .ticket-preview {
+            width: 700px;
+            height: 320px;
+            background: white;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        .ticket-left {
+            flex: 1;
+            padding: 30px 40px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .ticket-header {
+            font-weight: bold;
+            font-size: 2rem;
+        }
+
+        .ticket-type {
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        .ticket-bottom {
+            font-size: 0.9rem;
+        }
+
+        .ticket-right {
+            width: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 20px;
+            padding-bottom: 30px;
+        }
+
+        .qr-placeholder {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: #666;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Dashboard</a>
+
+        <h1>🎨 Design Your Tickets</h1>
+
+        <div class="layout">
+            <div class="form-section">
+                <form method="POST" action="/save-design/" id="designForm">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label>Event Name</label>
+                        <input type="text" name="event_name" id="eventName"
+                            value="{{ design.event_name|default:'My Event' }}" placeholder="Tech Fest 2026" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ticket Type</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" name="ticket_type" value="entry" id="typeEntry" 
+                                    {% if design.ticket_type == 'entry' or not design %}checked{% endif %}>
+                                <label for="typeEntry" style="margin: 0;">Free Entry</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" name="ticket_type" value="paid" id="typePaid" 
+                                    {% if design.ticket_type == 'paid' %}checked{% endif %}>
+                                <label for="typePaid" style="margin: 0;">Paid</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group price-field" id="priceField">
+                        <label>Price (₹)</label>
+                        <input type="number" name="price" id="price" value="{{ design.price|default:'500' }}" min="0"
+                            placeholder="500">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Primary Color</label>
+                        <input type="color" name="primary_color" id="primaryColor"
+                            value="{{ design.primary_color|default:'#2563eb' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Secondary Color</label>
+                        <input type="color" name="secondary_color" id="secondaryColor"
+                            value="{{ design.secondary_color|default:'#1e40af' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Background Style</label>
+                        <select name="background_style" id="backgroundStyle">
+                            <option value="gradient" {% if design.background_style == 'gradient' or not design %}selected{% endif %}>Gradient</option>
+                            <option value="solid" {% if design.background_style == 'solid' %}selected{% endif %}>Solid</option>
+                        </select>
+                    </div>
+
+                    <button type="submit">💾 Save Design & Continue</button>
+                </form>
+            </div>
+
+            <div class="preview-section">
+                <h3 style="margin-top: 0;">Live Preview</h3>
+                <div class="ticket-preview" id="ticketPreview">
+                    <div class="ticket-left">
+                        <div>
+                            <div class="ticket-header" id="previewEventName">MY EVENT</div>
+                            <div class="ticket-type" id="previewType">FREE ENTRY</div>
+                        </div>
+                        <div class="ticket-bottom">
+                            <div>TICKET ID: XXXXXXXX</div>
+                            <div style="font-size: 0.8rem; margin-top: 5px;">ADMIT ONE</div>
+                        </div>
+                    </div>
+                    <div class="ticket-right">
+                        <div style="color: white; font-size: 0.7rem; margin-bottom: 10px;"></div>
+                        <div class="qr-placeholder">QR CODE</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const typeEntry = document.getElementById('typeEntry');
+        const typePaid = document.getElementById('typePaid');
+        const priceField = document.getElementById('priceField');
+        const eventName = document.getElementById('eventName');
+        const primaryColor = document.getElementById('primaryColor');
+        const secondaryColor = document.getElementById('secondaryColor');
+        const backgroundStyle = document.getElementById('backgroundStyle');
+        const price = document.getElementById('price');
+
+        const ticketPreview = document.getElementById('ticketPreview');
+        const previewEventName = document.getElementById('previewEventName');
+        const previewType = document.getElementById('previewType');
+
+        function updatePreview() {
+            // Update event name
+            previewEventName.textContent = (eventName.value || 'MY EVENT').toUpperCase();
+
+            // Update ticket type
+            if (typePaid.checked) {
+                priceField.classList.add('active');
+                previewType.textContent = `PAID ENTRY | ₹${price.value || '500'}`;
+            } else {
+                priceField.classList.remove('active');
+                previewType.textContent = 'FREE ENTRY';
+            }
+
+            // Update colors
+            const primary = primaryColor.value;
+            const secondary = secondaryColor.value;
+
+            if (backgroundStyle.value === 'gradient') {
+                ticketPreview.style.background = `linear-gradient(90deg, ${primary}, ${secondary})`;
+            } else {
+                ticketPreview.style.background = primary;
+            }
+        }
+
+        // Event listeners
+        eventName.addEventListener('input', updatePreview);
+        typeEntry.addEventListener('change', updatePreview);
+        typePaid.addEventListener('change', updatePreview);
+        price.addEventListener('input', updatePreview);
+        primaryColor.addEventListener('input', updatePreview);
+        secondaryColor.addEventListener('input', updatePreview);
+        backgroundStyle.addEventListener('change', updatePreview);
+
+        // Initial update
+        updatePreview();
+    </script>
+</body>
+
+</html>

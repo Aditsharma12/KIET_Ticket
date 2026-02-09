@@ -1,23 +1,186 @@
 <!DOCTYPE html>
 <html>
-<head><title>Ticket Generator</title></head>
-<body style="font-family: sans-serif; text-align: center;">
-    <h1>Event Ticket Generator</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <label>Number of Tickets:</label>
-        <input type="number" name="count" value="5" min="1" max="50">
-        <button type="submit">Generate</button>
-    </form>
 
-    <div style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
+<head>
+    <title>Ticket Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #60a5fa;
+            margin-bottom: 30px;
+        }
+
+        .controls {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .design-info {
+            background: #334155;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .design-info h3 {
+            margin-top: 0;
+            color: #60a5fa;
+        }
+
+        .design-info p {
+            margin: 5px 0;
+            color: #94a3b8;
+        }
+
+        .edit-design-btn {
+            background: #a855f7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .edit-design-btn:hover {
+            background: #9333ea;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+        }
+
+        button,
+        .download-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        button:hover,
+        .download-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .download-btn {
+            background: #10b981;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+        }
+
+        .ticket-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .ticket-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .ticket-card img {
+            display: block;
+            max-width: 100%;
+        }
+
+        .back-link {
+            color: #60a5fa;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="/" class="back-link">← Back to Dashboard</a>
+
+    <h1>🎟️ Event Ticket Generator</h1>
+
+    <div class="controls">
+        {% if design %}
+        <div class="design-info">
+            <h3>Current Design:</h3>
+            <p><strong>Event:</strong> {{ design.event_name }}</p>
+            <p><strong>Type:</strong> {% if design.ticket_type == 'paid' %}Paid (₹{{ design.price }}){% else %}Free
+                Entry{% endif %}</p>
+            <a href="/design/" class="edit-design-btn">✏️ Edit Design</a>
+        </div>
+        {% else %}
+        <div class="design-info">
+            <h3>No custom design set</h3>
+            <p>Using default design. <a href="/design/" class="edit-design-btn">🎨 Create Design</a></p>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <label>Number of Tickets:</label>
+            <input type="number" name="count" value="5" min="1" max="100">
+            <button type="submit">Generate Tickets</button>
+        </form>
+
+        {% if tickets %}
+        <div>
+            <a href="/download-tickets/" class="download-btn">📥 Download All as ZIP</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="ticket-grid">
         {% for t in tickets %}
-            <div style="border: 2px dashed #333; margin: 10px; padding: 10px; width: 200px;">
-                <h3>EVENT PASS</h3>
-                <img src="data:image/png;base64,{{ t.qr_image }}" width="150">
-                <p><small>{{ t.id }}</small></p>
-            </div>
+        <div class="ticket-card">
+            <img src="data:image/png;base64,{{ t.qr_image }}">
+        </div>
         {% endfor %}
     </div>
+
+    {% if tickets %}
+    <p style="margin-top: 30px; color: #94a3b8;">
+        <em>{{ tickets|length }} ticket(s) generated. Print or download them for distribution.</em>
+    </p>
+    {% endif %}
 </body>
+
 </html>

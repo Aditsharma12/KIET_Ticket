@@ -70,13 +70,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'entry_system.wsgi.application'
 
 
-# Database
+# Database - MongoDB Configuration
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'djongo',
+        'CLIENT': {
+            'host': 'mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket',
+            'name': 'ticket_db',
+        }
     }
 }
 
@@ -116,3 +119,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
