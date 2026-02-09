@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gate Scanner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body { background: #222; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        #reader { width: 100%; max-width: 500px; margin: 0 auto; border: 5px solid #444; border-radius: 10px; }
+        #result { margin-top: 20px; font-size: 1.5rem; font-weight: bold; padding: 20px; border-radius: 5px; }
+        .success { background-color: #28a745; color: white; } /* Green */
+        .error { background-color: #dc3545; color: white; }   /* Red */
+        .waiting { background-color: #444; color: #ccc; }     /* Grey */
+    </style>
+</head>
+<body>
+    <h1>GATE ENTRY SCANNER</h1>
+    
+    <div id="reader"></div>
+    <div id="result" class="waiting">Waiting for scan...</div>
+
+    {% csrf_token %}
+
+    <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        let isScanning = true;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            if (!isScanning) return; // Prevent double scanning
+            isScanning = false;
+
+            // Update UI to show "Processing..."
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Verifying...";
+            resultDiv.className = "waiting";
+
+            // Send to Backend
+            const formData = new FormData();
+            formData.append('code', decodedText);
+
+            fetch('/api/validate/', {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrfToken},
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerText = data.message;
+                
+                // Update color based on status
+                if (data.status === 'success') {
+                    resultDiv.className = "success"; // Green
+                } else {
+                    resultDiv.className = "error";   // Red
+                    if (data.time) {
+                        resultDiv.innerText += "\n(Scanned at: " + data.time + ")";
+                    }
+                }
+
+                // Resume scanning after 3 seconds
+                setTimeout(() => {
+                    isScanning = true;
+                    resultDiv.innerText = "Ready to scan next...";
+                    resultDiv.className = "waiting";
+                }, 3000);
+            })
+            .catch(err => {
+                console.error(err);
+                isScanning = true;
+            });
+        }
+
+        // Initialize Scanner
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>
