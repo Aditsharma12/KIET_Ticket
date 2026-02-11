@@ -5,7 +5,7 @@ Your Django project now uses **MongoDB exclusively** as its database via the djo
 
 ## Configuration
 - **Database Engine**: djongo
-- **MongoDB URI**: `mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket`
+- **MongoDB URI**: `mongodb+srv://aditsharma2005vs_db_user:A1D2yushuI3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket`
 - **Database Name**: `ticket_db`
 
 ## Django Version
@@ -51,7 +51,7 @@ For advanced MongoDB operations, you can still use PyMongo:
 ```python
 from pymongo import MongoClient
 
-client = MongoClient('mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket')
+client = MongoClient('mongodb+srv://aditsharma2005vs_db_user:A1D2ahuI3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket')
 db = client['ticket_db']
 tickets_collection = db['tickets_ticket']  # Django prefixes with app_model
 
@@ -88,7 +88,7 @@ python manage.py createsuperuser
 ### MongoDB Compass
 You can also connect MongoDB Compass using the connection string to view/edit data directly:
 ```
-mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket
+mongodb+srv://aditsharma2005vs_db_user:A1D2Iagg3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket
 ```
 
 ## When to Use MongoDB
