@@ -1,12 +1,29 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from django.contrib import messages
 from .models import Ticket
+from .mongodb_utils import create_user, authenticate_user, get_user_by_username, get_ticket_stats
 import qrcode
 import base64
 from io import BytesIO
 import zipfile
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from functools import wraps
+
+
+def login_required_custom(view_func):
+    """
+    Decorator to require login for views.
+    Redirects to login page if user is not authenticated.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.session.get('user_id'):
+            return redirect('/login/')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 
 def hex_to_rgb(hex_color):
     """Convert hex color to RGB tuple"""
@@ -250,8 +267,13 @@ def download_tickets_zip(request):
     return response
 
 def landing_page(request):
-    """Renders the main dashboard."""
-    return render(request, 'index.html')
+    """
+    Landing page redirects to dashboard if logged in, otherwise to login.
+    """
+    if request.session.get('user_id'):
+        return redirect('/dashboard/')
+    else:
+        return redirect('/login/')
 
 # --- GATE SCANNER SECTION ---
 def gate_scanner(request):
@@ -286,3 +308,102 @@ def validate_ticket_api(request):
             return JsonResponse({'status': 'error', 'message': 'INVALID TICKET'})
             
     return JsonResponse({'status': 'error', 'message': 'Bad Request'})
+
+
+# --- AUTHENTICATION SECTION ---
+def register_view(request):
+    """
+    User registration page. Creates new user accounts.
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+        
+        # Validation
+        if not username or not password:
+            messages.error(request, 'Username and password are required.')
+            return render(request, 'register.html')
+        
+        if len(username) < 3:
+            messages.error(request, 'Username must be at least 3 characters long.')
+            return render(request, 'register.html')
+        
+        if len(password) < 6:
+            messages.error(request, 'Password must be at least 6 characters long.')
+            return render(request, 'register.html')
+        
+        if password != confirm_password:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'register.html')
+        
+        # Try to create user
+        if create_user(username, password):
+            messages.success(request, f'Account created successfully! You can now log in.')
+            return redirect('/login/')
+        else:
+            messages.error(request, 'Username already exists. Please choose a different one.')
+            return render(request, 'register.html')
+    
+    return render(request, 'register.html')
+
+
+def login_view(request):
+    """
+    User login page. Authenticates users and creates session.
+    """
+    # If already logged in, redirect to dashboard
+    if request.session.get('user_id'):
+        return redirect('/dashboard/')
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        
+        if not username or not password:
+            messages.error(request, 'Username and password are required.')
+            return render(request, 'login.html')
+        
+        # Authenticate user
+        user = authenticate_user(username, password)
+        
+        if user:
+            # Create session
+            request.session['user_id'] = str(user['_id'])
+            request.session['username'] = user['username']
+            messages.success(request, f'Welcome back, {user["username"]}!')
+            return redirect('/dashboard/')
+        else:
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'login.html')
+    
+    return render(request, 'login.html')
+
+
+def logout_view(request):
+    """
+    Logs out the user by clearing the session.
+    """
+    request.session.flush()
+    messages.success(request, 'You have been logged out successfully.')
+    return redirect('/login/')
+
+
+@login_required_custom
+def dashboard_view(request):
+    """
+    Protected dashboard accessible only to logged-in users.
+    """
+    username = request.session.get('username', 'User')
+    
+    # Get user stats using direct MongoDB queries (avoiding djongo compatibility issues)
+    stats = get_ticket_stats()
+    
+    context = {
+        'username': username,
+        'total_tickets': stats['total'],
+        'used_tickets': stats['used'],
+        'available_tickets': stats['available'],
+    }
+    
+    return render(request, 'dashboard.html', context)

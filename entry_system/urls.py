@@ -23,6 +23,14 @@ from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing_page, name='landing'),
+    
+    # Authentication URLs
+    path('register/', views.register_view, name='register'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    
+    # Ticket Management URLs
     path('design/', views.design_configurator, name='design'),
     path('save-design/', views.save_design, name='save_design'),
     path('generate/', views.generate_tickets, name='generate'),

@@ -83,6 +83,10 @@ DATABASES = {
     }
 }
 
+# MongoDB Configuration for direct PyMongo access
+MONGODB_URI = 'mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket'
+MONGODB_DB_NAME = 'ticket_db'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators

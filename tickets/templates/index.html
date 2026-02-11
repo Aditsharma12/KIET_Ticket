@@ -99,6 +99,21 @@
 
 <body>
 
+    <!-- Authentication Header -->
+    <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px;">
+        {% if request.session.user_id %}
+        <a href="/dashboard/"
+            style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Dashboard</a>
+        <a href="/logout/"
+            style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Logout</a>
+        {% else %}
+        <a href="/login/"
+            style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Login</a>
+        <a href="/register/"
+            style="background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Register</a>
+        {% endif %}
+    </div>
+
     <h1>EVENT DASHBOARD</h1>
 
     <div class="container">
