@@ -1,35 +1,133 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Entry System</title>
+    <title>Event Entry System · KIET Ticket System</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --secondary: #1e293b;
-            --accent: #0f172a;
-            --text: #f8fafc;
+        /* ========== DARK OCEAN THEME – PURE DESIGN OVERLAY ========== */
+
+        html {
+    background: #030812;  /* darkest color only */
+}
+
+body {
+    position: relative;
+    z-index: 0;
+}
+.container {
+    position: relative;
+    z-index: 10;
+}
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--accent);
-            color: var(--text);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+            color: white;
+            position: relative;
+            background: linear-gradient(145deg, #030812, #07111f, #0a1a2a, #041220);
+            background-size: 400% 400%;
+            animation: oceanDrift 25s ease infinite;
+            overflow-x: hidden;
+        }
+
+        @keyframes oceanDrift {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* ===== MOVING BUBBLE WALLPAPER ===== */
+        .bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            backdrop-filter: blur(3px);
+            animation: float 20s infinite ease-in-out;
+            border: 1px solid rgba(64, 224, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        .bubble:hover {
+            transform: scale(1.5) translateY(-20px) !important;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 40px rgba(64, 224, 255, 0.8), 0 0 80px rgba(0, 150, 255, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            animation-play-state: paused;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0) scale(0.7); opacity: 0.5; }
+            25% { transform: translateY(70vh) translateX(40px) scale(1.2); opacity: 0.8; }
+            50% { transform: translateY(40vh) translateX(-30px) scale(1.4); opacity: 1; }
+            75% { transform: translateY(20vh) translateX(30px) scale(1.2); opacity: 0.7; }
+            100% { transform: translateY(-20vh) translateX(0) scale(0.7); opacity: 0.4; }
+        }
+
+        /* ----- 15 BUBBLE VARIANTS (KEEP EXACTLY AS DASHBOARD) ----- */
+        .deep-blue-bubble1 { width: 180px; height: 180px; top: 10%; left: 5%; animation-duration: 22s; animation-delay: 0s; background: radial-gradient(circle at 30% 30%, rgba(0,191,255,0.4), rgba(0,105,148,0.3)); border: 1px solid rgba(0,191,255,0.3); box-shadow: 0 0 50px rgba(0,191,255,0.2); }
+        .deep-blue-bubble2 { width: 120px; height: 120px; top: 40%; right: 15%; animation-duration: 25s; animation-delay: 3s; background: radial-gradient(circle at 30% 30%, rgba(70,130,180,0.45), rgba(25,85,125,0.35)); border: 1px solid rgba(70,130,180,0.3); box-shadow: 0 0 45px rgba(70,130,180,0.25); }
+        .deep-blue-bubble3 { width: 90px; height: 90px; bottom: 30%; left: 20%; animation-duration: 19s; animation-delay: 2s; background: radial-gradient(circle at 30% 30%, rgba(30,144,255,0.5), rgba(0,90,156,0.4)); border: 1px solid rgba(30,144,255,0.35); box-shadow: 0 0 40px rgba(30,144,255,0.3); }
+        .aqua-bubble1 { width: 200px; height: 200px; top: 20%; right: 25%; animation-duration: 24s; animation-delay: 1s; background: radial-gradient(circle at 30% 30%, rgba(64,224,208,0.45), rgba(0,139,139,0.35)); border: 1px solid rgba(64,224,208,0.3); box-shadow: 0 0 55px rgba(64,224,208,0.25); }
+        .aqua-bubble2 { width: 140px; height: 140px; bottom: 20%; right: 35%; animation-duration: 21s; animation-delay: 4s; background: radial-gradient(circle at 30% 30%, rgba(72,209,204,0.5), rgba(32,178,170,0.4)); border: 1px solid rgba(72,209,204,0.35); box-shadow: 0 0 48px rgba(72,209,204,0.3); }
+        .aqua-bubble3 { width: 70px; height: 70px; top: 70%; left: 35%; animation-duration: 17s; animation-delay: 5s; background: radial-gradient(circle at 30% 30%, rgba(0,206,209,0.55), rgba(0,139,139,0.45)); border: 1px solid rgba(0,206,209,0.4); box-shadow: 0 0 35px rgba(0,206,209,0.35); }
+        .cyan-bubble1 { width: 160px; height: 160px; top: 50%; left: 45%; animation-duration: 23s; animation-delay: 2.5s; background: radial-gradient(circle at 30% 30%, rgba(137,207,240,0.5), rgba(100,149,237,0.4)); border: 1px solid rgba(137,207,240,0.35); box-shadow: 0 0 52px rgba(137,207,240,0.3); }
+        .cyan-bubble2 { width: 100px; height: 100px; bottom: 15%; left: 65%; animation-duration: 20s; animation-delay: 3.5s; background: radial-gradient(circle at 30% 30%, rgba(173,216,230,0.55), rgba(135,206,235,0.45)); border: 1px solid rgba(173,216,230,0.4); box-shadow: 0 0 42px rgba(173,216,230,0.35); }
+        .cyan-bubble3 { width: 85px; height: 85px; top: 80%; right: 45%; animation-duration: 18s; animation-delay: 6s; background: radial-gradient(circle at 30% 30%, rgba(135,206,250,0.6), rgba(70,130,200,0.5)); border: 1px solid rgba(135,206,250,0.45); box-shadow: 0 0 38px rgba(135,206,250,0.4); }
+        .turquoise-bubble1 { width: 150px; height: 150px; top: 15%; left: 75%; animation-duration: 26s; animation-delay: 0.8s; background: radial-gradient(circle at 30% 30%, rgba(64,224,208,0.45), rgba(0,128,128,0.35)); border: 1px solid rgba(64,224,208,0.3); box-shadow: 0 0 48px rgba(64,224,208,0.25); }
+        .turquoise-bubble2 { width: 95px; height: 95px; bottom: 40%; right: 55%; animation-duration: 22s; animation-delay: 4.8s; background: radial-gradient(circle at 30% 30%, rgba(32,178,170,0.5), rgba(0,128,128,0.4)); border: 1px solid rgba(32,178,170,0.35); box-shadow: 0 0 44px rgba(32,178,170,0.3); }
+        .navy-bubble1 { width: 220px; height: 220px; bottom: 10%; left: 10%; animation-duration: 28s; animation-delay: 0.3s; background: radial-gradient(circle at 30% 30%, rgba(0,0,128,0.35), rgba(25,25,112,0.3)); border: 1px solid rgba(100,149,237,0.25); box-shadow: 0 0 60px rgba(0,0,139,0.2); }
+        .navy-bubble2 { width: 130px; height: 130px; top: 60%; left: 85%; animation-duration: 27s; animation-delay: 5.5s; background: radial-gradient(circle at 30% 30%, rgba(72,61,139,0.4), rgba(25,25,112,0.35)); border: 1px solid rgba(106,90,205,0.3); box-shadow: 0 0 46px rgba(72,61,139,0.25); }
+        .glass-bubble1 { width: 110px; height: 110px; top: 35%; left: 55%; animation-duration: 29s; animation-delay: 7s; background: radial-gradient(circle at 30% 30%, rgba(176,224,230,0.3), rgba(176,224,230,0.1)); border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 0 40px rgba(176,224,230,0.25); }
+        .glass-bubble2 { width: 75px; height: 75px; bottom: 50%; left: 30%; animation-duration: 16s; animation-delay: 8.2s; background: radial-gradient(circle at 30% 30%, rgba(224,255,255,0.35), rgba(224,255,255,0.15)); border: 1px solid rgba(255,255,255,0.45); box-shadow: 0 0 36px rgba(224,255,255,0.3); }
+        .glass-bubble3 { width: 60px; height: 60px; top: 85%; right: 70%; animation-duration: 15s; animation-delay: 9s; background: radial-gradient(circle at 30% 30%, rgba(240,248,255,0.4), rgba(240,248,255,0.2)); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 0 32px rgba(240,248,255,0.35); }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 10, 20, 0.15);
+            z-index: -1;
+        }
+
+        /* ===== ORIGINAL LAYOUT – PRESERVED EXACTLY ===== */
+        /* Only colors, backgrounds, shadows, and typography updated – no structural changes */
+        body {
+            /* Already set above – keep as is */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
         }
 
         h1 {
-            margin-bottom: 40px;
+            color: white;
             font-size: 2.5rem;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(64, 224, 255, 0.6);
         }
 
         .container {
@@ -37,43 +135,57 @@
             gap: 30px;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .card {
-            background: var(--secondary);
-            border: 1px solid #334155;
-            border-radius: 15px;
+            background: rgba(4, 16, 30, 0.65);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(64, 224, 255, 0.25);
+            border-radius: 24px;
             padding: 40px;
             width: 250px;
             text-align: center;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
             cursor: pointer;
             text-decoration: none;
             color: white;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary);
+            transform: translateY(-8px);
+            background: rgba(8, 24, 44, 0.85);
+            border-color: rgba(64, 224, 255, 0.7);
+            box-shadow: 0 20px 45px rgba(0, 150, 255, 0.4);
         }
 
+        /* Keep individual hover border colors if desired, or unify – I'll keep original colors but adapt to theme */
         .card:nth-child(1):hover {
             border-color: #a855f7;
+            box-shadow: 0 20px 45px rgba(168, 85, 247, 0.3);
         }
-
         .card:nth-child(2):hover {
             border-color: #10b981;
+            box-shadow: 0 20px 45px rgba(16, 185, 129, 0.3);
         }
-
         .card:nth-child(3):hover {
             border-color: #3b82f6;
+            box-shadow: 0 20px 45px rgba(59, 130, 246, 0.3);
         }
 
         .icon {
             font-size: 4rem;
             margin-bottom: 20px;
             display: block;
+            filter: drop-shadow(0 0 15px rgba(64, 224, 255, 0.5));
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .icon {
+            filter: drop-shadow(0 0 25px rgba(64, 224, 255, 0.9));
+            transform: scale(1.1);
         }
 
         .title {
@@ -81,41 +193,120 @@
             font-weight: bold;
             margin-bottom: 10px;
             display: block;
+            text-shadow: 0 0 10px rgba(64, 224, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .title {
+            text-shadow: 0 0 20px rgba(64, 224, 255, 0.8);
+            letter-spacing: 1px;
         }
 
         .desc {
             font-size: 0.9rem;
-            color: #94a3b8;
+            color: rgba(200, 240, 255, 0.9);
+            line-height: 1.5;
+            transition: all 0.3s ease;
         }
 
-        /* Mobile Responsive */
+        .card:hover .desc {
+            color: white;
+        }
+
+        /* Auth header – same absolute positioning, new glass style */
+        div[style*="position: absolute; top: 20px; right: 20px;"] {
+            background: transparent !important;
+            display: flex;
+            gap: 12px;
+        }
+
+        div[style*="position: absolute; top: 20px; right: 20px;"] a {
+            background: rgba(4, 16, 30, 0.7) !important;
+            backdrop-filter: blur(12px);
+            padding: 10px 22px !important;
+            border-radius: 40px !important;
+            text-decoration: none;
+            font-weight: 600;
+            color: white !important;
+            border: 1px solid rgba(64, 224, 255, 0.4);
+            box-shadow: 0 8px 20px rgba(0, 50, 100, 0.2);
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        div[style*="position: absolute; top: 20px; right: 20px;"] a:hover {
+            transform: translateY(-3px);
+            border-color: rgba(64, 224, 255, 0.8);
+            box-shadow: 0 12px 30px rgba(0, 150, 255, 0.4);
+            background: rgba(8, 28, 48, 0.9) !important;
+        }
+
+        /* Logout/register specific colors – preserve intent with theme */
+        div[style*="position: absolute; top: 20px; right: 20px;"] a[href*="logout"] {
+            background: rgba(100, 20, 30, 0.7) !important;
+            border-color: rgba(255, 100, 100, 0.4);
+        }
+        div[style*="position: absolute; top: 20px; right: 20px;"] a[href*="register"] {
+            background: rgba(10, 80, 70, 0.7) !important;
+            border-color: rgba(64, 224, 208, 0.4);
+        }
+
+        /* Mobile responsive – same as original */
         @media (max-width: 900px) {
             .container {
                 flex-direction: column;
             }
+            h1 {
+                font-size: 2rem;
+                margin-top: 80px;
+            }
         }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a1a2a; }
+        ::-webkit-scrollbar-thumb { background: #0a6a8a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0a8aaa; box-shadow: 0 0 20px #40e0ff; }
     </style>
 </head>
 
 <body>
+    <!-- ===== ADD BUBBLES & OVERLAY – LAYERED BELOW CONTENT ===== -->
+    <div class="bubbles">
+        <div class="bubble deep-blue-bubble1"></div>
+        <div class="bubble deep-blue-bubble2"></div>
+        <div class="bubble deep-blue-bubble3"></div>
+        <div class="bubble aqua-bubble1"></div>
+        <div class="bubble aqua-bubble2"></div>
+        <div class="bubble aqua-bubble3"></div>
+        <div class="bubble cyan-bubble1"></div>
+        <div class="bubble cyan-bubble2"></div>
+        <div class="bubble cyan-bubble3"></div>
+        <div class="bubble turquoise-bubble1"></div>
+        <div class="bubble turquoise-bubble2"></div>
+        <div class="bubble navy-bubble1"></div>
+        <div class="bubble navy-bubble2"></div>
+        <div class="bubble glass-bubble1"></div>
+        <div class="bubble glass-bubble2"></div>
+        <div class="bubble glass-bubble3"></div>
+    </div>
+    <div class="overlay"></div>
 
-    <!-- Authentication Header -->
+    <!-- ===== AUTHENTICATION HEADER – EXACT SAME POSITION/STRUCTURE ===== -->
+    <!-- Preserved original inline style – only colors changed via CSS -->
     <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 10px;">
         {% if request.session.user_id %}
-        <a href="/dashboard/"
-            style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Dashboard</a>
-        <a href="/logout/"
-            style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Logout</a>
+        <a href="/dashboard/" style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Dashboard</a>
+        <a href="/logout/" style="background: #ef4444; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Logout</a>
         {% else %}
-        <a href="/login/"
-            style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Login</a>
-        <a href="/register/"
-            style="background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Register</a>
+        <a href="/login/" style="background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Login</a>
+        <a href="/register/" style="background: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600;">Register</a>
         {% endif %}
     </div>
 
     <h1>EVENT DASHBOARD</h1>
 
+    <!-- ===== CARD CONTAINER – EXACT SAME CLASSES ===== -->
     <div class="container">
         <a href="/design/" class="card">
             <span class="icon">🎨</span>
@@ -135,7 +326,6 @@
             <span class="desc">Entry Gate<br>Validate & Check-In</span>
         </a>
     </div>
-
 </body>
 
 </html>

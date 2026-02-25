@@ -1,11 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - KIET Ticket System</title>
     <style>
+        /* ========== DARK OCEAN THEME – FULL BUBBLE BACKGROUND ========== */
+        /* Applied to registration page – same styling as login page */
+        html {
+    background: #030812;  /* darkest color only */
+}
+
+body {
+    position: relative;
+    z-index: 0;
+}
+.container {
+    position: relative;
+    z-index: 10;
+}
+
         * {
             margin: 0;
             padding: 0;
@@ -14,22 +30,121 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            color: white;
+            /* DEEP OCEAN GRADIENT (ANIMATED) */
+            background: linear-gradient(145deg, #030812, #07111f, #0a1a2a, #041220);
+            background-size: 400% 400%;
+            animation: oceanDrift 25s ease infinite;
+            overflow-x: hidden;
         }
 
+        @keyframes oceanDrift {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* ===== FLOATING BUBBLES – 100% CSS, NO EXTRA HTML ===== */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 50%;
+            background: transparent;
+            animation: floatUp 20s infinite linear;
+        }
+
+        body::before {
+            box-shadow: 
+                80px 15vh 0 10px rgba(64, 224, 255, 0.2),
+                450px 80vh 0 15px rgba(0, 191, 255, 0.18),
+                780px 40vh 0 25px rgba(70, 130, 180, 0.15),
+                220px 90vh 0 18px rgba(64, 224, 208, 0.2),
+                680px 20vh 0 30px rgba(135, 206, 250, 0.15),
+                320px 60vh 0 12px rgba(0, 206, 209, 0.2),
+                920px 70vh 0 20px rgba(176, 224, 230, 0.18),
+                40px 30vh 0 24px rgba(100, 149, 237, 0.12),
+                540px 50vh 0 16px rgba(72, 209, 204, 0.2),
+                380px 10vh 0 18px rgba(30, 144, 255, 0.15),
+                760px 85vh 0 14px rgba(0, 191, 255, 0.2),
+                260px 45vh 0 16px rgba(64, 224, 208, 0.18),
+                640px 95vh 0 22px rgba(135, 206, 235, 0.14),
+                480px 25vh 0 24px rgba(70, 130, 200, 0.16),
+                840px 65vh 0 20px rgba(240, 248, 255, 0.2);
+            animation-duration: 24s;
+            animation-delay: -4s;
+        }
+
+        body::after {
+            box-shadow: 
+                120px 25vh 0 8px rgba(0, 191, 255, 0.15),
+                520px 65vh 0 22px rgba(64, 224, 208, 0.12),
+                280px 75vh 0 14px rgba(135, 206, 250, 0.18),
+                720px 35vh 0 26px rgba(70, 130, 180, 0.1),
+                180px 55vh 0 18px rgba(176, 224, 230, 0.16),
+                580px 15vh 0 12px rgba(30, 144, 255, 0.2),
+                880px 45vh 0 20px rgba(100, 149, 237, 0.14),
+                140px 85vh 0 16px rgba(72, 209, 204, 0.18),
+                420px 30vh 0 24px rgba(0, 206, 209, 0.15),
+                620px 90vh 0 10px rgba(64, 224, 255, 0.2),
+                360px 10vh 0 28px rgba(135, 206, 235, 0.12),
+                800px 60vh 0 14px rgba(240, 248, 255, 0.18),
+                200px 70vh 0 20px rgba(0, 191, 255, 0.16),
+                500px 40vh 0 18px rgba(64, 224, 208, 0.2),
+                900px 80vh 0 22px rgba(70, 130, 200, 0.14);
+            animation-duration: 28s;
+            animation-delay: -8s;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-15vh) translateX(20px) scale(1.1);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-30vh) translateX(-20px) scale(1.2);
+                opacity: 0.2;
+            }
+        }
+
+        /* ===== CONTAINER – GLASS CARD ===== */
         .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 450px;
+            background: rgba(4, 16, 30, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 45px 45px;
+            border-radius: 36px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(64, 224, 255, 0.3);
+            max-width: 500px;
             width: 100%;
             animation: slideIn 0.5s ease-out;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(64, 224, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .container:hover {
+            background: rgba(8, 24, 44, 0.85);
+            border: 1px solid rgba(64, 224, 255, 0.7);
+            box-shadow: 0 20px 50px rgba(0, 150, 255, 0.4);
+            transform: translateY(-3px);
         }
 
         @keyframes slideIn {
@@ -37,145 +152,198 @@
                 opacity: 0;
                 transform: translateY(-30px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
+        /* ===== LARGER FONT SIZES ===== */
         h1 {
-            color: #333;
+            color: white;
             text-align: center;
-            margin-bottom: 10px;
-            font-size: 32px;
+            margin-bottom: 12px;
+            font-size: 38px;
+            text-shadow: 0 0 20px rgba(64, 224, 255, 0.6);
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
+            color: rgba(220, 245, 255, 0.95);
+            margin-bottom: 35px;
+            font-size: 17px;
+            font-weight: 400;
         }
 
         .messages {
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .alert {
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 14px;
+            padding: 14px 20px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            background: rgba(4, 20, 36, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(64, 224, 255, 0.3);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            transform: translateX(6px);
+            border-color: rgba(64, 224, 255, 0.7);
+            box-shadow: 0 5px 18px rgba(0, 150, 255, 0.3);
         }
 
         .alert-error {
-            background-color: #fee;
-            color: #c33;
-            border-left: 4px solid #c33;
+            border-left: 8px solid #ff6b6b;
         }
 
         .alert-success {
-            background-color: #efe;
-            color: #3c3;
-            border-left: 4px solid #3c3;
+            border-left: 8px solid #40e0ff;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 28px;
         }
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 10px;
+            color: #c0e4ff;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 16px;
+            letter-spacing: 0.4px;
         }
 
         input[type="text"],
         input[type="password"] {
             width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
+            padding: 16px 20px;
+            border: 1px solid rgba(64, 224, 255, 0.4);
+            border-radius: 50px;
+            font-size: 17px;
             transition: all 0.3s;
             outline: none;
+            background: rgba(4, 16, 30, 0.7);
+            backdrop-filter: blur(5px);
+            color: white;
         }
 
         input[type="text"]:focus,
         input[type="password"]:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: rgba(64, 224, 255, 0.9);
+            box-shadow: 0 0 0 5px rgba(64, 224, 255, 0.1), 0 0 25px rgba(64, 224, 255, 0.4);
+            background: rgba(8, 24, 44, 0.9);
+        }
+
+        input::placeholder {
+            color: rgba(200, 240, 255, 0.6);
+            font-size: 16px;
         }
 
         .btn {
             width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px 28px;
+            background: linear-gradient(135deg, #0e5a7a, #0a3a4a);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            border: 1px solid rgba(64, 224, 255, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 50, 100, 0.4);
+            letter-spacing: 0.8px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            transform: translateY(-4px) scale(1.02);
+            background: linear-gradient(135deg, #126a8a, #0e4a5a);
+            border-color: rgba(64, 224, 255, 0.9);
+            box-shadow: 0 16px 35px rgba(0, 150, 255, 0.5);
         }
 
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .login-link {
-            text-align: center;
-            margin-top: 25px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .login-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-
+        /* ----- REQUIREMENTS BOX – GLASS OCEAN STYLE ----- */
         .requirements {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 13px;
-            color: #666;
+            background: rgba(4, 16, 30, 0.5);
+            backdrop-filter: blur(8px);
+            padding: 20px 25px;
+            border-radius: 20px;
+            margin-top: 30px;
+            font-size: 15px;
+            color: #c0e4ff;
+            border: 1px solid rgba(64, 224, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .requirements:hover {
+            background: rgba(8, 28, 44, 0.6);
+            border-color: rgba(64, 224, 255, 0.6);
+            box-shadow: 0 5px 20px rgba(0, 150, 255, 0.2);
         }
 
         .requirements h4 {
-            margin-bottom: 8px;
-            color: #333;
-            font-size: 14px;
+            margin-bottom: 12px;
+            color: white;
+            font-size: 17px;
+            text-shadow: 0 0 8px rgba(64, 224, 255, 0.5);
         }
 
         .requirements ul {
-            margin-left: 20px;
+            margin-left: 22px;
         }
 
         .requirements li {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            color: #d0e8ff;
+            font-size: 15px;
+        }
+
+        /* ----- LOGIN LINK (instead of register link) ----- */
+        .login-link {
+            text-align: center;
+            margin-top: 28px;
+            color: rgba(220, 245, 255, 0.9);
+            font-size: 16px;
+        }
+
+        .login-link a {
+            color: #b0e4ff;
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.2s;
+            border-bottom: 1px solid transparent;
+            font-size: 16px;
+        }
+
+        .login-link a:hover {
+            color: white;
+            border-bottom-color: #40e0ff;
+            text-shadow: 0 0 12px rgba(64, 224, 255, 0.6);
+        }
+
+        /* Custom scrollbar – ocean blue */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a1a2a; }
+        ::-webkit-scrollbar-thumb { background: #0a6a8a; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #0a8aaa; box-shadow: 0 0 20px #40e0ff; }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .container { padding: 30px 25px; }
+            h1 { font-size: 32px; }
         }
     </style>
 </head>
 
 <body>
+    <!-- HTML IS EXACTLY THE SAME – NO ADDED ELEMENTS -->
     <div class="container">
         <h1>🎫 Create Account</h1>
         <p class="subtitle">Join KIET Ticket System</p>

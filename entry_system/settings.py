@@ -70,22 +70,30 @@ TEMPLATES = [
 WSGI_APPLICATION = 'entry_system.wsgi.application'
 
 
-# Database - MongoDB Configuration
+# Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Use SQLite for Django's built-in models (admin, auth, sessions, etc.)
+# MongoDB will be accessed via mongoengine for your custom models
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'CLIENT': {
-            'host': 'mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket',
-            'name': 'ticket_db',
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-# MongoDB Configuration for direct PyMongo access
+# MongoDB Configuration using mongoengine
+import mongoengine
+
 MONGODB_URI = 'mongodb+srv://aditsharma2005vs_db_user:A1D2I3T4@ticket.9f9ssoy.mongodb.net/?appName=Ticket'
 MONGODB_DB_NAME = 'ticket_db'
+
+# Connect to MongoDB
+mongoengine.connect(
+    db=MONGODB_DB_NAME,
+    host=MONGODB_URI,
+    alias='default'
+)
 
 
 # Password validation
