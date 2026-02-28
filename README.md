@@ -56,5 +56,5 @@ KIET_Ticket/
 └── package.json     # Project metadata
 ```
 
----  
+-----
 **Happy Event Managing!** ✨  
