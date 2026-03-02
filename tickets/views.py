@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 from .models import Ticket
 from .mongodb_utils import create_user, authenticate_user, get_user_by_username, get_ticket_stats
 import qrcode
@@ -122,19 +123,19 @@ def generate_ticket_image(ticket_id, design_config=None):
     draw.text((left_margin, height - 50), "ADMIT ONE", 
               fill='white', font=small_font)
     
-    # RIGHT SECTION - QR Code in bottom right
-    qr = qrcode.QRCode(box_size=6, border=2)
+    # RIGHT SECTION - QR Code (large, centered right half for easy scanning)
+    qr = qrcode.QRCode(box_size=10, border=3, error_correction=qrcode.constants.ERROR_CORRECT_H)
     qr.add_data(str(ticket_id))
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color="black", back_color="white")
     
-    # Resize QR code
-    qr_size = 130
-    qr_img = qr_img.resize((qr_size, qr_size))
-    
-    # Position QR in bottom right corner
-    qr_x = width - qr_size - 30
-    qr_y = height - qr_size - 30
+    # Resize QR code – make it tall enough to fill most of the right panel
+    qr_size = 220
+    qr_img = qr_img.resize((qr_size, qr_size), resample=0)
+
+    # Center QR vertically within the right section, with margin from edge
+    qr_x = width - qr_size - 20
+    qr_y = (height - qr_size) // 2
     
     # Add white rounded background for QR code
     qr_bg_padding = 15
@@ -280,34 +281,56 @@ def gate_scanner(request):
     """Renders the webcam scanning page."""
     return render(request, 'scanner.html')
 
+@csrf_exempt
 def validate_ticket_api(request):
     """
-    The AJAX endpoint called by the JS Scanner.
-    This is where the One-Time Logic lives.
+    Validate a scanned QR code ticket.
+    Accepts both JSON body (Next.js) and form POST (original Django scanner).
+    Reads/writes tickets in MongoDB (same store as api_generate).
     """
-    if request.method == "POST":
-        scanned_code = request.POST.get('code')
-        
+    if request.method != "POST":
+        return JsonResponse({'status': 'error', 'message': 'Bad Request'})
+
+    # Support both JSON body (Next.js) and form-encoded (original Django template)
+    scanned_code = None
+    content_type = request.content_type or ''
+    if 'application/json' in content_type:
+        import json as _json
         try:
-            ticket = Ticket.objects.get(ticket_id=scanned_code)
-            
-            if ticket.is_used:
-                return JsonResponse({
-                    'status': 'error', 
-                    'message': 'ALREADY USED!', 
-                    'time': ticket.scanned_at
-                })
-            else:
-                # MARK AS USED (The core state change)
-                ticket.is_used = True
-                ticket.scanned_at = timezone.now()
-                ticket.save()
-                return JsonResponse({'status': 'success', 'message': 'ENTRY GRANTED'})
-                
-        except Ticket.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'INVALID TICKET'})
-            
-    return JsonResponse({'status': 'error', 'message': 'Bad Request'})
+            body = _json.loads(request.body)
+            scanned_code = body.get('code')
+        except Exception:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+    else:
+        scanned_code = request.POST.get('code')
+
+    if not scanned_code:
+        return JsonResponse({'status': 'error', 'message': 'No ticket code provided'})
+
+    from .mongodb_utils import get_tickets_collection
+    tickets = get_tickets_collection()
+
+    ticket = tickets.find_one({'ticket_id': scanned_code})
+
+    if not ticket:
+        return JsonResponse({'status': 'error', 'message': 'INVALID TICKET'})
+
+    if ticket.get('is_used'):
+        scan_time = str(ticket.get('scanned_at', ''))
+        return JsonResponse({
+            'status': 'error',
+            'message': 'ALREADY USED!',
+            'time': scan_time,
+        })
+
+    # Mark as used
+    from datetime import datetime
+    now = datetime.utcnow()
+    tickets.update_one(
+        {'ticket_id': scanned_code},
+        {'$set': {'is_used': True, 'scanned_at': now}}
+    )
+    return JsonResponse({'status': 'success', 'message': 'ENTRY GRANTED ✅'})
 
 
 # --- AUTHENTICATION SECTION ---
@@ -407,3 +430,176 @@ def dashboard_view(request):
     }
     
     return render(request, 'dashboard.html', context)
+
+
+# ============================================================
+#  JSON API VIEWS – consumed by Next.js frontend
+# ============================================================
+
+@csrf_exempt
+def api_login(request):
+    """JSON API: authenticate and start session."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+
+    if not username or not password:
+        return JsonResponse({'status': 'error', 'message': 'Username and password are required.'})
+
+    user = authenticate_user(username, password)
+    if user:
+        request.session['user_id'] = str(user['_id'])
+        request.session['username'] = user['username']
+        return JsonResponse({'status': 'success', 'username': user['username'], 'user_id': str(user['_id'])})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid username or password.'})
+
+
+@csrf_exempt
+def api_register(request):
+    """JSON API: create a new user account."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    confirm  = data.get('confirm_password', '')
+
+    if not username or not password:
+        return JsonResponse({'status': 'error', 'message': 'Username and password are required.'})
+    if len(username) < 3:
+        return JsonResponse({'status': 'error', 'message': 'Username must be at least 3 characters.'})
+    if len(password) < 6:
+        return JsonResponse({'status': 'error', 'message': 'Password must be at least 6 characters.'})
+    if password != confirm:
+        return JsonResponse({'status': 'error', 'message': 'Passwords do not match.'})
+
+    if create_user(username, password):
+        return JsonResponse({'status': 'success', 'message': 'Account created successfully.'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Username already exists.'})
+
+
+@csrf_exempt
+def api_logout(request):
+    """JSON API: destroy session."""
+    request.session.flush()
+    return JsonResponse({'status': 'success', 'message': 'Logged out.'})
+
+
+@csrf_exempt
+def api_dashboard(request):
+    """JSON API: return ticket stats for the dashboard."""
+    # Session cookie auth doesn't work cross-origin in dev;
+    # access is guarded on the Next.js side via localStorage.
+    stats = get_ticket_stats()
+    return JsonResponse({
+        'total_tickets': stats['total'],
+        'used_tickets':  stats['used'],
+        'available_tickets': stats['available'],
+    })
+
+
+@csrf_exempt
+def api_save_design(request):
+    """JSON API: save ticket design to session."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    import json
+    try:
+        design_config = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    request.session['ticket_design'] = design_config
+    return JsonResponse({'status': 'success'})
+
+
+@csrf_exempt
+def api_generate(request):
+    """JSON API: generate N tickets and return base64 images (stores in MongoDB)."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    # Session cookie auth doesn't work cross-origin in dev;
+    # access is guarded on the Next.js side via localStorage.
+    import json
+    from datetime import datetime
+    from .mongodb_utils import get_tickets_collection
+
+    try:
+        body = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    count         = min(int(body.get('count', 5)), 100)
+    design_config = body.get('design') or {}
+
+    tickets_collection = get_tickets_collection()
+    tickets_out = []
+    ticket_ids  = []
+
+    for _ in range(count):
+        import uuid
+        ticket_id = str(uuid.uuid4())
+
+        # Save directly to MongoDB (same collection that get_ticket_stats reads from)
+        tickets_collection.insert_one({
+            'ticket_id': ticket_id,
+            'is_used':   False,
+            'scanned_at': None,
+            'created_at': datetime.utcnow(),
+        })
+
+        ticket_ids.append(ticket_id)
+        img_str, _ = generate_ticket_image(ticket_id, design_config)
+        tickets_out.append({'id': ticket_id, 'qr_image': img_str})
+
+    return JsonResponse({'tickets': tickets_out})
+
+
+@csrf_exempt
+def api_download_tickets(request):
+    """JSON API: download tickets as a ZIP."""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+
+    import json
+    try:
+        body = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+    ticket_ids    = body.get('ticket_ids') or request.session.get('last_generated_tickets', [])
+    design_config = body.get('design') or request.session.get('ticket_design')
+
+    if not ticket_ids:
+        return HttpResponse('No tickets to download.', status=400)
+
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for tid in ticket_ids:
+            _, img = generate_ticket_image(tid, design_config)
+            img_buf = BytesIO()
+            img.save(img_buf, format='PNG')
+            zf.writestr(f'ticket_{tid[:8]}.png', img_buf.getvalue())
+
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="event_tickets.zip"'
+    return response
